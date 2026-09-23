@@ -295,7 +295,7 @@ export class WorkspaceAnalyzer {
   private readonly options: Required<Pick<
     WorkspaceAnalyzerOptions,
     'root' | 'hostConfig' | 'clientConfig' | 'faces' | 'checkDiagnostics' | 'mode'
-  >> & Pick<WorkspaceAnalyzerOptions, 'packages'>
+  >> & Pick<WorkspaceAnalyzerOptions, 'packages' | 'packageRoots'>
   private queuedEdit: SourceEdit | undefined
   private readonly crossFaceLinks = new Map<string, CrossFaceLink>()
   private readonly checkedProjects = new Set<string>()
@@ -311,6 +311,7 @@ export class WorkspaceAnalyzer {
       checkDiagnostics: options.checkDiagnostics ?? true,
       mode: options.mode ?? 'check',
       ...(options.packages === undefined ? {} : { packages: options.packages }),
+      ...(options.packageRoots === undefined ? {} : { packageRoots: options.packageRoots }),
     }
     this.caches = options.caches ?? new WorkspaceCaches()
   }
