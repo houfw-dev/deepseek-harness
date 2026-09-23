@@ -16,10 +16,11 @@
  * scrollbar indirection away while it is elsewhere, so a list the user is not
  * pointing at carries no bar.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
-  FishLogo, IconNewChatOutlineMedium, IconNewChatOutlineRegular, IconPanelLeftOutlineRegular, isDarwinDesktop, Tooltip,
+  FishLogo, IconNewChatOutlineMedium, IconNewChatOutlineRegular, IconPanelLeftOutlineRegular,
+  isDarwinDesktop, SidebarGroupsContext, SidebarGroupToggle, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
@@ -29,6 +30,9 @@ import css from './SidebarRoot.module.css'
 
 /** Wide-content unmount delay; matches the 150ms wide-content fade-out. */
 const COLLAPSE_SETTLE_MS = 150
+
+/** Collapse key of the shell-owned system group (the settings seat). */
+const SYSTEM_GROUP_KEY = 'system'
 
 /**
  * How long the column's scrollbars stay drawn after the pointer leaves it.
@@ -122,6 +126,51 @@ export function SidebarRoot({
   // collapsed state renders the rail statically (no delay-hidden icons).
   const everWide = useRef(!collapsed)
   if (!collapsed) everWide.current = true
+
+  // Wide-sidebar caption groups collapse on caption click: bands contributed
+  // by business packs are keyed by their first entry's group prop (context),
+  // and the shell-owned system group gates the settings seat. Collapse is a
+  // wide-only affordance — the rail renders icons regardless. Each band seeds
+  // its own initial state: the shell starts the system group collapsed, and a
+  // band leader reports a collapsed default through context (reportDefault
+  // Collapsed seeds before first paint); explicit caption clicks override it.
+  const [defaultCollapsedKeys, setDefaultCollapsedKeys] = useState<ReadonlySet<string>>(
+    () => new Set<string>([SYSTEM_GROUP_KEY]),
+  )
+  const [groupOverrides, setGroupOverrides] = useState<ReadonlyMap<string, boolean>>(
+    () => new Map<string, boolean>(),
+  )
+  const reportDefaultCollapsed = useCallback((key: string): void => {
+    setDefaultCollapsedKeys((prev) => {
+      if (prev.has(key)) return prev
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
+  }, [])
+  const toggleGroup = useCallback((key: string): void => {
+    setGroupOverrides((prev) => {
+      const currently = prev.has(key)
+        ? prev.get(key) === true
+        : defaultCollapsedKeys.has(key)
+      const next = new Map(prev)
+      next.set(key, !currently)
+      return next
+    })
+  }, [defaultCollapsedKeys])
+  const collapsedGroups = useMemo(() => {
+    const effective = new Set(defaultCollapsedKeys)
+    for (const [key, collapsedValue] of groupOverrides) {
+      if (collapsedValue) effective.add(key)
+      else effective.delete(key)
+    }
+    return effective
+  }, [defaultCollapsedKeys, groupOverrides])
+  const groupsApi = useMemo(
+    () => ({ collapsed: collapsedGroups, toggle: toggleGroup, reportDefaultCollapsed }),
+    [collapsedGroups, toggleGroup, reportDefaultCollapsed],
+  )
+  const systemCollapsed = collapsedGroups.has(SYSTEM_GROUP_KEY)
 
   // Scrollbars in the column follow the pointer (.quietBars rebinds them
   // away): drawn while it is inside, and for SCROLLBAR_LINGER_MS after it
@@ -292,15 +341,33 @@ export function SidebarRoot({
         })}
       </div>
 
-      {/* Footer actions stack above Settings in both sidebar widths. */}
-      <div className={css.footArea}>
-        <div className={css.footerActions}>
-          {renderSlot('sidebar.footer.action', { wide })}
+      {/* Footer actions stack above the Settings group in both sidebar
+          widths. The system group carries a shell-rendered wide-only caption;
+          the business bands caption themselves via their first entry's
+          groupHeader so the shell stays business-agnostic. Every caption is a
+          collapse toggle in the wide sidebar: entries carrying a collapsed
+          group key hide (SidebarFootAction via context), and the system group
+          gates its settings seat directly. The rail ignores collapse and
+          always renders icons. */}
+      <SidebarGroupsContext.Provider value={groupsApi}>
+        <div className={css.footArea}>
+          <div className={css.footerActions}>
+            {renderSlot('sidebar.footer.action', { wide })}
+          </div>
+          <div className={css.settingsArea}>
+            {wide
+              ? (
+                <SidebarGroupToggle
+                  label={t('group.system')}
+                  collapsed={systemCollapsed}
+                  onToggle={() => { toggleGroup(SYSTEM_GROUP_KEY) }}
+                />
+              )
+              : null}
+            {!(wide && systemCollapsed) && renderSlot('sidebar.settings', { wide })}
+          </div>
         </div>
-        <div className={css.settingsArea}>
-          {renderSlot('sidebar.settings', { wide })}
-        </div>
-      </div>
+      </SidebarGroupsContext.Provider>
     </div>
   )
 }

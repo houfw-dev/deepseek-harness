@@ -2,7 +2,8 @@
 import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Tooltip, useSidebarGroups } from '@deepseek-ai/dsh-client-ui-primitives'
+import { useLayoutEffect } from 'react'
 import type { ReactNode } from 'react'
 import type {
   SidebarFooterActionOwnerProps, SidebarRootComponentProps, SidebarSectionOwnerProps,
@@ -35,6 +36,29 @@ const neverHook = (() => { throw new Error('shell must not read global hooks') }
 type AttentionSnapshot = Parameters<Parameters<SidebarRootComponentProps['useSessionStatus']>[0]>[0]
 const noAttention: AttentionSnapshot = new Map()
 const useSessionStatus: SidebarRootComponentProps['useSessionStatus'] = selector => selector(noAttention)
+
+// Stand-in for a SidebarFootAction band leader: it reports a collapsed default
+// through the shell's context the way the real action does, renders a caption
+// that toggles the group, and hides its entry while collapsed. The effect
+// depends on the context object (same deps as the real action), so it re-runs
+// on every shell re-render — an expanded group must stay open through a
+// re-seed, which is the regression the defaults/overrides split exists for.
+function BandStub({ group, reportCollapsed = false }: {
+  group: string
+  reportCollapsed?: boolean
+}) {
+  const groups = useSidebarGroups()
+  useLayoutEffect(() => {
+    if (reportCollapsed) groups?.reportDefaultCollapsed(group)
+  }, [groups, group, reportCollapsed])
+  const entryCollapsed = groups?.collapsed.has(group) ?? false
+  return (
+    <>
+      <button type="button" onClick={() => { groups?.toggle(group) }}>{`caption-${group}`}</button>
+      {!entryCollapsed && <div data-testid={`entry-${group}`} />}
+    </>
+  )
+}
 
 function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; width?: number } = {}) {
   const startSession = vi.fn()
@@ -164,9 +188,15 @@ describe('SidebarRoot shell', () => {
   it('hands the region its wide flag and clamps expandSidebar to the collapsed state', () => {
     const b = mountShell()
     expect(b.regionOwner().wide).toBe(true)
-    // The settings seat rides the same wide flag (ui-settings renders the row).
-    expect(b.settingsOwner().wide).toBe(true)
+    // The system group starts collapsed: the settings seat hides behind its
+    // caption while the footer-action band stays mounted.
+    const caption = screen.getByRole('button', { name: 'Settings' })
+    expect(caption.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByTestId('settings-seat')).toBeNull()
     expect(b.footerActionOwner().wide).toBe(true)
+    fireEvent.click(caption)
+    // The revealed settings seat rides the same wide flag.
+    expect(b.settingsOwner().wide).toBe(true)
     // Expanded: the request is a no-op (no accidental collapse).
     b.regionOwner().expandSidebar()
     expect(b.toggleSidebar).not.toHaveBeenCalled()
@@ -218,6 +248,57 @@ describe('SidebarRoot shell', () => {
     expect(screen.getByRole('tooltip').textContent).toBe('Open sidebar')
     fireEvent.mouseLeave(toggle)
     expect(screen.queryByRole('tooltip')).toBeNull()
+  })
+
+  it('starts the shell-owned system group collapsed and toggles it from its caption', () => {
+    mountShell()
+    const captionName = 'Settings'
+    // Default: the system group starts collapsed — the settings seat hides,
+    // while the footer-action band stays mounted.
+    expect(screen.getByRole('button', { name: captionName }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByTestId('settings-seat')).toBeNull()
+    expect(screen.getByTestId('footer-action-seat')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: captionName }))
+    expect(screen.getByRole('button', { name: captionName }).getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByTestId('settings-seat')).toBeTruthy()
+    expect(screen.getByTestId('footer-action-seat')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: captionName }))
+    expect(screen.getByRole('button', { name: captionName }).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByTestId('settings-seat')).toBeNull()
+  })
+
+  it('lets a band leader seed its collapsed default, with user toggles winning over re-seeds', () => {
+    render(<SidebarRoot
+      collapsed={false} width={300}
+      useSessions={neverHook} useSessionStatus={useSessionStatus} useSessionRetainInfo={neverHook}
+      usePanelInfo={usePanelInfo} selectPanel={() => {}} usePanels={selector => selector([])}
+      useResource={useResource} useWorkspaces={neverHook}
+      startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
+      renderSlot={((key: string) => {
+        if (key === 'sidebar.footer.action') {
+          return (
+            <>
+              <BandStub group="resources" reportCollapsed />
+              <BandStub group="video" />
+            </>
+          )
+        }
+        // The system group starts collapsed, so its seat never mounts here.
+        if (key === 'sidebar.settings') return null
+        return <div data-testid="region" />
+      }) as SidebarRootComponentProps['renderSlot']}
+    />)
+    // The reporting band (resources) starts collapsed with its entry hidden;
+    // the non-reporting band (video) starts expanded.
+    expect(screen.queryByTestId('entry-resources')).toBeNull()
+    expect(screen.getByTestId('entry-video')).toBeTruthy()
+    // Expanding the seeded band reveals its entry, and it stays revealed even
+    // though the leader re-reports its default on the resulting re-render.
+    fireEvent.click(screen.getByRole('button', { name: 'caption-resources' }))
+    expect(screen.getByTestId('entry-resources')).toBeTruthy()
+    expect(screen.getByTestId('entry-video')).toBeTruthy()
   })
 })
 

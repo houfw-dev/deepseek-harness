@@ -206,10 +206,28 @@ exports[`sidebar shell snapshots > renders Windows caption controls in expanded 
       <div
         class="settingsArea"
       >
-        <div
-          data-slot="sidebar.settings"
-          style="display: contents;"
-        />
+        <button
+          aria-expanded="false"
+          class="groupHeaderButton"
+          type="button"
+        >
+          <span
+            class="groupHeaderText"
+          >
+            Settings
+          </span>
+          <svg
+            aria-hidden="true"
+            class="groupChevron groupChevronCollapsed"
+            data-content="2b5d7fd1"
+            fill="none"
+            height="14"
+            stroke-width="1"
+            viewBox="0 0 16 16"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+        </button>
       </div>
     </div>
   </div>
@@ -440,10 +458,28 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
       <div
         class="settingsArea"
       >
-        <div
-          data-slot="sidebar.settings"
-          style="display: contents;"
-        />
+        <button
+          aria-expanded="false"
+          class="groupHeaderButton"
+          type="button"
+        >
+          <span
+            class="groupHeaderText"
+          >
+            Settings
+          </span>
+          <svg
+            aria-hidden="true"
+            class="groupChevron groupChevronCollapsed"
+            data-content="2b5d7fd1"
+            fill="none"
+            height="14"
+            stroke-width="1"
+            viewBox="0 0 16 16"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+        </button>
       </div>
     </div>
   </div>
@@ -574,10 +610,28 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
       <div
         class="settingsArea"
       >
-        <div
-          data-slot="sidebar.settings"
-          style="display: contents;"
-        />
+        <button
+          aria-expanded="false"
+          class="groupHeaderButton"
+          type="button"
+        >
+          <span
+            class="groupHeaderText"
+          >
+            系统设置
+          </span>
+          <svg
+            aria-hidden="true"
+            class="groupChevron groupChevronCollapsed"
+            data-content="2b5d7fd1"
+            fill="none"
+            height="14"
+            stroke-width="1"
+            viewBox="0 0 16 16"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          />
+        </button>
       </div>
     </div>
   </div>
