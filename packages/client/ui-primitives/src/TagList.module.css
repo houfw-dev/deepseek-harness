@@ -1,0 +1,20 @@
+/* Clipped single-line tag row; the full list shows in a hover tooltip. The
+   owning table cell supplies the column width (its own max-width). */
+.tagList {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tagPill {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}

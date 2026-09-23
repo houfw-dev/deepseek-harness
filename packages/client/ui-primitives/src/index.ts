@@ -30,6 +30,44 @@ export type { AnchoredPositionOptions } from './useAnchoredPosition.ts'
 export { useDismissOnOutsidePointer } from './useDismissOnOutsidePointer.ts'
 export { HoverCard } from './HoverCard.tsx'
 export { Modal } from './Modal.tsx'
+export { Pagination, pagerLabels } from './Pagination.tsx'
+export type { PaginationProps, PaginationLabels, PagerTranslate, PagerDictionaryKey } from './Pagination.tsx'
+export { usePagination } from './usePagination.ts'
+export type { PaginationState } from './usePagination.ts'
+export {
+  FormCard,
+  FormField,
+  FormFieldGroup,
+  TextField,
+  parseTags,
+  TagsField,
+  FormError,
+  FormActions,
+  FormFooter,
+  ErrorBanner,
+  EmptyState,
+  SearchField,
+  ListPager,
+} from './FormKit.tsx'
+export type { TagsFieldProps } from './FormKit.tsx'
+export { DataTable, ResultsTable, DeleteRowButton } from './DataTable.tsx'
+export type {
+  DataTableProps,
+  ResultsTableProps,
+  ResultsTableTranslate,
+  ResultsTableDictionaryKey,
+  DeleteRowButtonProps,
+  DeleteConfirmCopy,
+} from './DataTable.tsx'
+export { ConfirmDialog } from './ConfirmDialog.tsx'
+export type { ConfirmDialogProps } from './ConfirmDialog.tsx'
+export { TagList } from './TagList.tsx'
+export { SidebarFootModal } from './SidebarFootModal.tsx'
+export type { SidebarFootModalProps } from './SidebarFootModal.tsx'
+export { SidebarFootAction } from './SidebarFootAction.tsx'
+export type { SidebarFootActionProps } from './SidebarFootAction.tsx'
+export { SidebarGroupToggle, SidebarGroupsContext, useSidebarGroups } from './SidebarGroupToggle.tsx'
+export type { SidebarGroupsApi, SidebarGroupToggleProps } from './SidebarGroupToggle.tsx'
 export { OnboardingSurface } from './OnboardingSurface.tsx'
 export { RiskConfirmation } from './RiskConfirmation.tsx'
 export type { RiskConfirmationProps } from './RiskConfirmation.tsx'

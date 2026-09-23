@@ -1,0 +1,50 @@
+/* Workbench results table shell: horizontally scrollable, shared row chrome.
+   Feature modules keep column-specific classes (numbers, tags, actions). */
+
+/* Result-count line above the table (and above the empty state). */
+.meta {
+  margin: 16px 0 4px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--dsw-alias-label-secondary);
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px;
+  color: var(--dsw-alias-label-primary);
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* Ghost icon-only delete button in a row actions cell. */
+.deleteButton {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.deleteButton:hover {
+  color: var(--dsw-alias-label-primary);
+}

@@ -1,0 +1,69 @@
+/* Inline workbench form card, shown in place of the query/result region while
+   an add/edit/submit flow is open (the modal shell has no nested dialogs). */
+.formCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+}
+
+.formTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.fieldInput {
+  width: 100%;
+}
+
+.formError {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Panel-level inline failure banner. */
+.error {
+  margin: 0 0 12px;
+  padding: 8px 0;
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* Centered empty-results region. */
+.empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+}
+
+/* Growing search box in the panel query row. */
+.searchInput {
+  flex: 1;
+  min-width: 0;
+}

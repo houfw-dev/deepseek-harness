@@ -1,0 +1,99 @@
+/* Sidebar foot trigger chrome shared by the foot entries: the modal openers
+   (SidebarFootModal — Hot Videos, User Management) and direct actions
+   (SidebarFootAction — User Management sign-out). */
+
+/* Trigger row: the 42px foot-row box shared with the Settings foot rhythm. */
+.trigger {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 4px);
+  height: 42px;
+  margin: 4px -2px;
+  padding: 0 10px 0 8px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.trigger:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* Rail trigger: the same 36x36 circle box as the other rail controls. */
+.trigger.rail {
+  width: 36px;
+  height: 36px;
+  margin: 8px 0 10px;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.triggerLabel {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Wide-only group caption: the first entry of a sidebar group renders this
+   above its trigger (the collapsed rail shows icons only). Aligned with the
+   trigger's icon edge and set in the tertiary caption color. */
+.groupHeader {
+  flex: none;
+  padding: 12px 8px 2px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Collapsible variant of the caption: a full-width button (caption left,
+   chevron right) with the same padding/type metrics as .groupHeader. The
+   chevron rotates 90° when the group is collapsed. */
+.groupHeaderButton {
+  flex: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 8px 2px;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.groupHeaderButton:hover {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.groupHeaderText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.groupChevron {
+  flex: none;
+  transition: transform 120ms ease;
+}
+
+.groupChevronCollapsed {
+  transform: rotate(-90deg);
+}

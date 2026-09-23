@@ -1,0 +1,26 @@
+/* Pagination: Previous / page-number / Next controls for a split list. The
+   caller owns the page state and list slicing; this is layout only. */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pages {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Square-ish number buttons: a fixed minimum keeps single digits centered. */
+.page {
+  min-width: 28px;
+  padding: 0 6px;
+}
+
+.edge {
+  white-space: nowrap;
+}

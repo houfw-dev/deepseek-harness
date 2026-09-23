@@ -1,0 +1,87 @@
+/* Above-modal confirmation layer: mirrors Modal's mask + card but at z-1100
+   (the portaled-Menu/Toast/HoverCard layer) so it floats over an open
+   workbench modal rather than nesting inside it. */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.mask {
+  position: absolute;
+  inset: 0;
+  background: var(--dsw-alias-bg-mask-1);
+  backdrop-filter: var(--dsw-mask-blur);
+}
+
+.dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: min(400px, 100%);
+  padding: 24px;
+  border: 1px solid var(--dsw-alias-border-inverted);
+  border-radius: 24px;
+  background: var(--dsw-alias-bg-layer-2);
+  box-shadow: var(--dsw-shadow-lv3);
+}
+
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.warningIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.text {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.message {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.action {
+  min-width: 80px;
+}
+
+/* Destructive confirm: the error fill with its on-color foreground token
+   (white on red-600 in light, near-black on red-400 in dark). */
+.danger {
+  background: var(--dsw-alias-state-error-primary);
+  color: var(--dsw-alias-label-primary-foreground);
+}
+
+.danger:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
