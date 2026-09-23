@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { dirname, join, resolve } from 'node:path'
 import ts from 'typescript'
 import { WorkspaceTypertGenerator } from './workspace.ts'
-import type { WorkspaceEmitResult } from './workspace.ts'
+import type { WorkspaceEmitResult, WorkspaceTypertGeneratorOptions } from './workspace.ts'
 import type { TypertFace } from './model.ts'
 
 /** The subset of the rolldown plugin contract used here (structural; avoids a rolldown type dependency). */
@@ -33,6 +33,16 @@ export interface TypertPluginOptions {
   readonly mode?: 'package' | 'workspace'
   /** Independent TypeScript program faces included in this phase. */
   readonly faces?: readonly TypertFace[]
+  /** Allowed package-project roots for layouts where packs live outside `packages/`. */
+  readonly packageRoots?: readonly string[]
+}
+
+/** Resolve the generator behavior switches shared by package and workspace modes. */
+function generatorOptions(pluginOptions: TypertPluginOptions): WorkspaceTypertGeneratorOptions {
+  return {
+    ...TSC_VERIFIED_INPUT,
+    ...(pluginOptions.packageRoots === undefined ? {} : { packageRoots: pluginOptions.packageRoots }),
+  }
 }
 
 /**
@@ -83,7 +93,7 @@ export function typertPlugin(pluginOptions: TypertPluginOptions = {}): TypertPlu
       if (manifest.name === undefined || !hasTypertExport(manifest.exports)) return
       let artifacts = artifactsByRoot.get(root)
       if (artifacts === undefined) {
-        const generator = new WorkspaceTypertGenerator(root, TSC_VERIFIED_INPUT)
+        const generator = new WorkspaceTypertGenerator(root, generatorOptions(pluginOptions))
         artifacts = pluginOptions.faces === undefined
           ? generator.generate()
           : generator.generate(undefined, pluginOptions.faces)
@@ -94,7 +104,7 @@ export function typertPlugin(pluginOptions: TypertPluginOptions = {}): TypertPlu
   }
 
   function emitWorkspace(root: string, faces: readonly TypertFace[] | undefined): void {
-    const generator = new WorkspaceTypertGenerator(root, TSC_VERIFIED_INPUT)
+    const generator = new WorkspaceTypertGenerator(root, generatorOptions(pluginOptions))
     const packages = generator.discover(faces)
       .filter(candidate => hasTypertExport(readManifest(join(root, candidate.root)).exports))
       .map(candidate => candidate.package)

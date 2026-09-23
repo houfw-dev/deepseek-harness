@@ -71,6 +71,13 @@ export interface WorkspaceAnalyzerOptions {
   readonly clientConfig?: string
   /** Optional package-name subset for an incremental generation pass. */
   readonly packages?: readonly string[]
+  /**
+   * Directory roots that may contain package projects, relative to {@link root}
+   * (absolute paths accepted). Package references outside these roots are
+   * ignored. Defaults to `['packages']`; the vendored tree stays a separate
+   * vendor whitelist.
+   */
+  readonly packageRoots?: readonly string[]
   /** Independently compiled faces to materialize; both are analyzed by default. */
   readonly faces?: readonly TypertFace[]
   /** Whether to repeat TypeScript project diagnostics before model extraction. */
@@ -474,7 +481,7 @@ export class WorkspaceAnalyzer {
   }
 
   private loadRegistrations(includeVendor = false): PackageRegistration[] {
-    const inventoryKey = `${this.options.root}\0${this.options.hostConfig}\0${this.options.clientConfig}\0${String(includeVendor)}`
+    const inventoryKey = `${this.options.root}\0${this.options.hostConfig}\0${this.options.clientConfig}\0${String(includeVendor)}\0${(this.options.packageRoots ?? ['packages']).join(',')}`
     const cached = this.caches.registrations.get(inventoryKey)
     if (cached !== undefined) return cached
     const registrations: PackageRegistration[] = []
@@ -485,7 +492,9 @@ export class WorkspaceAnalyzer {
       for (const reference of aggregate.parsed.projectReferences ?? []) {
         const configPath = projectConfigPath(reference.path)
         const packageRoot = dirname(configPath)
-        if (!isWithin(realPath(packageRoot), join(this.options.root, 'packages'))
+        const allowedRoots = (this.options.packageRoots ?? ['packages'])
+          .map(candidate => realPath(resolve(this.options.root, candidate)))
+        if (!allowedRoots.some(allowed => isWithin(realPath(packageRoot), allowed))
           && !(includeVendor && isWithin(realPath(packageRoot), join(this.options.root, 'vendor')))) continue
         const manifestPath = join(packageRoot, 'package.json')
         if (!existsSync(manifestPath)) continue

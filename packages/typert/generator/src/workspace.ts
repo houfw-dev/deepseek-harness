@@ -26,6 +26,11 @@ export interface WorkspaceTypertGeneratorOptions {
    * merges) run regardless.
    */
   readonly checkDiagnostics?: boolean
+  /**
+   * Allowed package-project directory roots, forwarded to the analyzer; see
+   * {@link WorkspaceAnalyzerOptions.packageRoots}.
+   */
+  readonly packageRoots?: readonly string[]
 }
 
 /** Discover, analyze, and emit package reflection from independent faces. */
@@ -54,6 +59,7 @@ export class WorkspaceTypertGenerator {
       root: this.root,
       caches: this.caches,
       ...(faces === undefined ? {} : { faces }),
+      ...(this.options.packageRoots === undefined ? {} : { packageRoots: this.options.packageRoots }),
     }).discoverPackages()
   }
 
@@ -71,6 +77,7 @@ export class WorkspaceTypertGenerator {
       caches: this.caches,
       ...(faces === undefined ? {} : { faces }),
       ...(this.options.checkDiagnostics === undefined ? {} : { checkDiagnostics: this.options.checkDiagnostics }),
+      ...(this.options.packageRoots === undefined ? {} : { packageRoots: this.options.packageRoots }),
     }).analyze()
     const artifacts: WorkspaceEmitResult[] = []
     for (const face of workspace.faces) {
