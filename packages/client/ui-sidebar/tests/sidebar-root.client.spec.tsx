@@ -7,7 +7,7 @@ import { useLayoutEffect } from 'react'
 import type { ReactNode } from 'react'
 import type {
   SidebarFooterActionOwnerProps, SidebarRootComponentProps, SidebarSectionOwnerProps,
-  SidebarSettingsOwnerProps,
+  SidebarSettingsOwnerProps, SidebarSystemActionOwnerProps,
 } from '../src/client/contract/slots.ts'
 import { HeaderLeadingControls, type HeaderLeadingControlsProps } from '../src/client/HeaderLeadingControls.tsx'
 import { SidebarRoot } from '../src/client/SidebarRoot.tsx'
@@ -65,6 +65,7 @@ function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; w
   const toggleSidebar = vi.fn()
   let regionOwner: SidebarSectionOwnerProps | undefined
   let settingsOwner: SidebarSettingsOwnerProps | undefined
+  let systemActionOwner: SidebarSystemActionOwnerProps | undefined
   let footerActionOwner: SidebarFooterActionOwnerProps | undefined
   const brandMark = <span data-testid="custom-brand-mark">M</span>
   const brandName = <span data-testid="custom-brand-name">Custom Brand</span>
@@ -87,6 +88,10 @@ function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; w
           settingsOwner = owner
           return <div data-testid="settings-seat" data-wide={owner.wide} />
         }
+        if (key === 'sidebar.system.action') {
+          systemActionOwner = owner as SidebarSystemActionOwnerProps
+          return <div data-testid="system-action-seat" data-wide={owner.wide} />
+        }
         if (key === 'sidebar.footer.action') {
           footerActionOwner = owner
           return <div data-testid="footer-action-seat" data-wide={owner.wide} />
@@ -107,6 +112,10 @@ function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; w
     settingsOwner: () => {
       if (settingsOwner === undefined) throw new Error('settings owner not rendered')
       return settingsOwner
+    },
+    systemActionOwner: () => {
+      if (systemActionOwner === undefined) throw new Error('system action owner not rendered')
+      return systemActionOwner
     },
     footerActionOwner: () => {
       if (footerActionOwner === undefined) throw new Error('footer action owner not rendered')
@@ -257,16 +266,19 @@ describe('SidebarRoot shell', () => {
     // while the footer-action band stays mounted.
     expect(screen.getByRole('button', { name: captionName }).getAttribute('aria-expanded')).toBe('false')
     expect(screen.queryByTestId('settings-seat')).toBeNull()
+    expect(screen.queryByTestId('system-action-seat')).toBeNull()
     expect(screen.getByTestId('footer-action-seat')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: captionName }))
     expect(screen.getByRole('button', { name: captionName }).getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByTestId('settings-seat')).toBeTruthy()
+    expect(screen.getByTestId('system-action-seat')).toBeTruthy()
     expect(screen.getByTestId('footer-action-seat')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: captionName }))
     expect(screen.getByRole('button', { name: captionName }).getAttribute('aria-expanded')).toBe('false')
     expect(screen.queryByTestId('settings-seat')).toBeNull()
+    expect(screen.queryByTestId('system-action-seat')).toBeNull()
   })
 
   it('lets a band leader seed its collapsed default, with user toggles winning over re-seeds', () => {
@@ -285,8 +297,8 @@ describe('SidebarRoot shell', () => {
             </>
           )
         }
-        // The system group starts collapsed, so its seat never mounts here.
-        if (key === 'sidebar.settings') return null
+        // The system group starts collapsed, so its seats never mount here.
+        if (key === 'sidebar.settings' || key === 'sidebar.system.action') return null
         return <div data-testid="region" />
       }) as SidebarRootComponentProps['renderSlot']}
     />)

@@ -8,8 +8,10 @@
  * same top-down order) on one fade that ends with the slide. The bottom-pinned
  * settings control only fades. The workspace/session browsing region between
  * global panel rows and the foot is the `sidebar.workspaces` registrant's,
- * and the foot holds `sidebar.settings` plus `sidebar.footer.action`; the shell
- * hands them the wide flag (plus an expand request callback for the browser).
+ * and the foot holds the business bands in `sidebar.footer.action`, followed
+ * by the shell-owned system group: `sidebar.settings` plus
+ * `sidebar.system.action`; the shell hands them the wide flag (plus an expand
+ * request callback for the browser).
  *
  * The column also owns whether the scroll regions nested in it draw a
  * scrollbar at all: the shell tracks the pointer and rebinds ui-theme's
@@ -341,13 +343,13 @@ export function SidebarRoot({
         })}
       </div>
 
-      {/* Footer actions stack above the Settings group in both sidebar
-          widths. The system group carries a shell-rendered wide-only caption;
-          the business bands caption themselves via their first entry's
-          groupHeader so the shell stays business-agnostic. Every caption is a
-          collapse toggle in the wide sidebar: entries carrying a collapsed
-          group key hide (SidebarFootAction via context), and the system group
-          gates its settings seat directly. The rail ignores collapse and
+      {/* The foot stacks the business bands above the shell-owned system
+          group in both sidebar widths. The business bands caption themselves
+          via their first entry's groupHeader so the shell stays
+          business-agnostic. Every caption is a collapse toggle in the wide
+          sidebar: entries carrying a collapsed group key hide
+          (SidebarFootAction via context), and the system group gates its
+          settings seat and system actions. The rail ignores collapse and
           always renders icons. */}
       <SidebarGroupsContext.Provider value={groupsApi}>
         <div className={css.footArea}>
@@ -365,6 +367,7 @@ export function SidebarRoot({
               )
               : null}
             {!(wide && systemCollapsed) && renderSlot('sidebar.settings', { wide })}
+            {!(wide && systemCollapsed) && renderSlot('sidebar.system.action', { wide })}
           </div>
         </div>
       </SidebarGroupsContext.Provider>

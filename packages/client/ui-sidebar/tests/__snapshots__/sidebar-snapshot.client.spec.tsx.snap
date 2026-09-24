@@ -76,6 +76,10 @@ exports[`sidebar shell snapshots > renders Windows caption controls in expanded 
           data-slot="sidebar.settings"
           style="display: contents;"
         />
+        <div
+          data-slot="sidebar.system.action"
+          style="display: contents;"
+        />
       </div>
     </div>
   </div>
@@ -326,6 +330,10 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
       >
         <div
           data-slot="sidebar.settings"
+          style="display: contents;"
+        />
+        <div
+          data-slot="sidebar.system.action"
           style="display: contents;"
         />
       </div>

@@ -3,9 +3,10 @@
  * layout-owned `sidebar` slot, plus the holes this shell declares. The shell
  * owns column geometry, the brand row, New Session, and global panel rows;
  * everything between the workspace section header and the list bottom is the
- * `sidebar.workspaces` registrant's (ui-workspace), and the foot is the
- * `sidebar.settings` registrant's (ui-settings), followed by optional footer
- * actions in `sidebar.footer.action`.
+ * `sidebar.workspaces` registrant's (ui-workspace), and the foot holds the
+ * business bands in `sidebar.footer.action`, followed by the shell-owned
+ * system group: the `sidebar.settings` registrant (ui-settings) plus optional
+ * system actions in `sidebar.system.action`.
  */
 import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
@@ -46,8 +47,15 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'sidebar.settings': { kind: 'single'; scope: 'root'; owner: SidebarSettingsOwnerProps }
     /**
-     * Optional actions beside Settings at the sidebar foot. Declared by this
-     * package's 'sidebar' entry; each action receives only the column state.
+     * Optional actions inside the system group, below the settings seat.
+     * Declared by this package's 'sidebar' entry; each action receives only
+     * the column state and hides with the collapsed system caption.
+     */
+    'sidebar.system.action': { kind: 'list'; scope: 'root'; owner: SidebarSystemActionOwnerProps }
+    /**
+     * Optional business actions at the sidebar foot, stacked in bands.
+     * Declared by this package's 'sidebar' entry; each action receives only
+     * the column state.
      */
     'sidebar.footer.action': { kind: 'list'; scope: 'root'; owner: SidebarFooterActionOwnerProps }
   }
@@ -103,7 +111,13 @@ export interface SidebarSettingsOwnerProps {
   wide: boolean
 }
 
-/** Owner share of an action rendered beside Settings at the sidebar foot. */
+/** Owner share of an action rendered inside the system group. */
+export interface SidebarSystemActionOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+}
+
+/** Owner share of an action rendered at the sidebar foot. */
 export interface SidebarFooterActionOwnerProps {
   /** Whether the sidebar renders wide content (false = 56px rail). */
   wide: boolean
@@ -142,6 +156,7 @@ export type SidebarRootComponentProps =
     | 'sidebar.panellist'
     | 'sidebar.workspaces'
     | 'sidebar.settings'
+    | 'sidebar.system.action'
     | 'sidebar.footer.action'
   >
   & InjectFace<SidebarRootInjected> & PropsLocale<'sidebar'>
