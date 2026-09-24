@@ -243,6 +243,18 @@ describe('bundler input ownership', () => {
     }
   })
 
+  it('enforces the experimental directory under every declared root', () => {
+    const test = fixture()
+    const external = join(test.root, 'external')
+    const ownership = new BundleInputIsolation([test.root, external], 'fixture')
+    const experimental = join(external, 'packages/experimental/prototype/index.js')
+    const regular = join(external, 'packages/client/plugin/index.js')
+    test.write('external/packages/experimental/prototype/index.js', '')
+    test.write('external/packages/client/plugin/index.js', '')
+    expect(() => { ownership.assertInput(experimental) }).toThrow(/experimental input/)
+    expect(() => { ownership.assertInput(regular) }).not.toThrow()
+  })
+
   it('distinguishes missing actual inputs from omitted upstream source-map files', () => {
     const test = fixture()
     const ownership = new BundleInputIsolation(test.root, 'fixture')

@@ -13,7 +13,7 @@
 import { readFile, stat, utimes } from 'node:fs/promises'
 import { existsSync, globSync, readFileSync } from 'node:fs'
 import { createRequire, isBuiltin } from 'node:module'
-import { basename, dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
+import { basename, delimiter, dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Rolldown, type TsdownPlugin, type UserConfig } from 'tsdown'
 import { transform } from 'lightningcss'
@@ -82,11 +82,34 @@ const SKIP_WORKSPACE_BUILD: UserConfig = { entry: '' }
 
 const REPOSITORY_ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
+/**
+ * Extra workspace roots mounted outside this repository, separated with
+ * path.delimiter. A subtree consumer calls this helper through the vendored
+ * copy while its own packages live outside this tree. Extra roots precede this
+ * repository in lookup order, so a same-named external package wins.
+ */
+const EXTRA_ROOTS_ENV = 'DSH_TSDOWN_EXTRA_ROOTS'
+const PACKAGE_ROOTS: readonly string[] = [
+  ...(process.env[EXTRA_ROOTS_ENV] ?? '')
+    .split(delimiter)
+    .filter(value => value !== '')
+    .map(value => resolvePath(value)),
+  REPOSITORY_ROOT,
+]
+
+/** Return the package root containing `file`, falling back to this repository. */
+function containingRoot(file: string): string {
+  return PACKAGE_ROOTS.find((root) => {
+    const path = relative(root, file)
+    return path !== '' && !path.startsWith('..') && !isAbsolute(path)
+  }) ?? REPOSITORY_ROOT
+}
+
 /** Rebase a physical lib-relative source onto a browser URL that mirrors the repository directories. */
 function browserSourcePath(source: string, sourcemapPath: string): string {
   if (!source.startsWith('.')) return source
   const physicalSource = resolvePath(dirname(sourcemapPath), source)
-  const repositoryPath = relative(REPOSITORY_ROOT, physicalSource).split(sep).join('/')
+  const repositoryPath = relative(containingRoot(physicalSource), physicalSource).split(sep).join('/')
   return repositoryPath.startsWith('packages/') ? `../../../${repositoryPath}` : source
 }
 
@@ -358,13 +381,15 @@ const clientExternalCache = new Map<string, ReadonlySet<string>>()
 function workspaceManifest(id: string): WorkspaceManifest {
   const cached = manifestCache.get(id)
   if (cached !== undefined) return cached
-  for (const manifestPath of globSync('packages/*/*/package.json', { cwd: REPOSITORY_ROOT })) {
-    const manifest = JSON.parse(
-      readFileSync(resolvePath(REPOSITORY_ROOT, manifestPath), 'utf8'),
-    ) as WorkspaceManifest
-    if (manifest.name !== id) continue
-    manifestCache.set(id, manifest)
-    return manifest
+  for (const root of PACKAGE_ROOTS) {
+    for (const manifestPath of globSync('packages/*/*/package.json', { cwd: root })) {
+      const manifest = JSON.parse(
+        readFileSync(resolvePath(root, manifestPath), 'utf8'),
+      ) as WorkspaceManifest
+      if (manifest.name !== id) continue
+      manifestCache.set(id, manifest)
+      return manifest
+    }
   }
   throw new Error(`tsdown: no packages/*/*/package.json declares the name ${id}`)
 }
@@ -632,7 +657,7 @@ function clientInputIsolation(id: string): {
   sourcePath: (source: string, mapPath: string) => string
 } {
   const experimental = id.startsWith('@deepseek-ai/dsh-experimental-')
-  const inputs = new BundleInputIsolation(REPOSITORY_ROOT, `client bundle isolation (${id})`)
+  const inputs = new BundleInputIsolation(PACKAGE_ROOTS, `client bundle isolation (${id})`)
   return {
     plugin: {
       name: 'dsh-client-input-isolation',

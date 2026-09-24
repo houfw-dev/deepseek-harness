@@ -7,11 +7,16 @@ import { fileURLToPath } from 'node:url'
 /** Package identities are cached only within one build. */
 export class BundleInputIsolation {
   private readonly packages = new Map<string, string | undefined>()
-  private readonly repository: string
+  private readonly repositories: readonly string[]
   private readonly label: string
 
-  constructor(repository: string, label: string) {
-    this.repository = repository
+  /**
+   * @param repository - Repository root, or multiple roots for subtree layouts
+   * where packages live outside this repository; each root's
+   * `packages/experimental` directory stays off-limits.
+   */
+  constructor(repository: string | readonly string[], label: string) {
+    this.repositories = typeof repository === 'string' ? [repository] : repository
     this.label = label
   }
 
@@ -40,9 +45,11 @@ export class BundleInputIsolation {
     }
     const file = physicalBundleInput(id)
     if (file === undefined) return
-    const lexical = relative(resolve(this.repository, 'packages/experimental'), file)
-    if (lexical === '' || lexical !== '..' && !lexical.startsWith(`..${sep}`) && !isAbsolute(lexical)) {
-      throw new Error(`${this.label}: experimental input ${id}`)
+    for (const repository of this.repositories) {
+      const lexical = relative(resolve(repository, 'packages/experimental'), file)
+      if (lexical === '' || lexical !== '..' && !lexical.startsWith(`..${sep}`) && !isAbsolute(lexical)) {
+        throw new Error(`${this.label}: experimental input ${id}`)
+      }
     }
     let existing = file
     if (!allowMissing && !existsSync(file)) throw new Error(`${this.label}: input ${id} is missing`)
