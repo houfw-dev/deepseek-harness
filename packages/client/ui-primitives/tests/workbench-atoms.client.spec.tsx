@@ -352,6 +352,21 @@ describe('SidebarFootModal', () => {
       </SidebarFootModal>)
     expect(screen.queryByText('用户管理')).toBeNull()
   })
+
+  it('applies bodyClassName to the modal body wrapper', () => {
+    render(
+      <SidebarFootModal
+        wide
+        label="用户管理"
+        closeLabel="关闭"
+        icon={<span aria-hidden="true">★</span>}
+        bodyClassName="fill-body"
+      >
+        <div>panel body</div>
+      </SidebarFootModal>)
+    fireEvent.click(screen.getByRole('button', { name: '用户管理' }))
+    expect(document.querySelector('.fill-body')?.textContent).toContain('panel body')
+  })
 })
 
 describe('SidebarFootAction', () => {

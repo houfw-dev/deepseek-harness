@@ -31,6 +31,8 @@ export interface SidebarFootModalProps {
   dialogClassName?: string | undefined
   /** Class on the Modal scroll region, for per-surface overflow handling. */
   contentClassName?: string | undefined
+  /** Class on the Modal body wrapper, letting a full-height view stretch inside. */
+  bodyClassName?: string | undefined
   /** Modal body. */
   children?: ReactNode | undefined
 }
@@ -51,6 +53,7 @@ export function SidebarFootModal({
   defaultCollapsed,
   dialogClassName,
   contentClassName,
+  bodyClassName,
   children,
 }: SidebarFootModalProps) {
   const [open, setOpen] = useState(false)
@@ -75,6 +78,7 @@ export function SidebarFootModal({
         closeLabel={closeLabel}
         className={dialogClassName ?? ''}
         contentClassName={contentClassName ?? ''}
+        bodyClassName={bodyClassName ?? ''}
       >
         {children}
       </Modal>
