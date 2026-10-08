@@ -16,14 +16,14 @@ export interface SidebarGroupsApi {
   /** Flip one group's collapsed state by key. */
   toggle: (key: string) => void
   /**
-   * Declare from a band's leader entry that the band starts collapsed (its
-   * entries hidden until its caption is toggled). The leader calls this from a
-   * layout effect, so the seed lands before first paint; a band that starts
-   * expanded simply does not call it. Explicit user toggles always win over
-   * the seed, and the call is idempotent (re-reporting an already-seeded key is
-   * a no-op). The shell seeds its own system group; the rail never collapses.
+   * Declare a collapse group from a foot entry through a layout effect, so the
+   * shell knows every band key before first paint. Entries with the same key
+   * report it repeatedly and the call stays idempotent. startsCollapsed seeds
+   * the band hidden (the band's leader passes its defaultCollapsed prop);
+   * false bands start expanded. Explicit user toggles always win over the
+   * seed. The shell seeds its own system group; the rail never collapses.
    */
-  reportDefaultCollapsed: (key: string) => void
+  reportGroup: (key: string, startsCollapsed: boolean) => void
 }
 
 /** Context provided by the sidebar shell around its footer region; null outside it. */

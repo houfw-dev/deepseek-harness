@@ -130,19 +130,32 @@ export function SidebarRoot({
   if (!collapsed) everWide.current = true
 
   // Wide-sidebar caption groups collapse on caption click: bands contributed
-  // by business packs are keyed by their first entry's group prop (context),
-  // and the shell-owned system group gates the settings seat. Collapse is a
-  // wide-only affordance — the rail renders icons regardless. Each band seeds
-  // its own initial state: the shell starts the system group collapsed, and a
-  // band leader reports a collapsed default through context (reportDefault
-  // Collapsed seeds before first paint); explicit caption clicks override it.
+  // by business packs are keyed by their entries' group prop (context), and
+  // the shell-owned system group gates the settings seat. Collapse is a
+  // wide-only affordance — the rail renders icons regardless. Each foot
+  // entry registers its group key before first paint; the band's leader seeds
+  // whether it starts collapsed. The bands are an accordion: expanding one
+  // band collapses every other band, so one band is open at most; collapsing
+  // the open band leaves all collapsed. knownKeys is the complete reported
+  // band set (including bands that start expanded); defaultCollapsedKeys is
+  // the subset seeded hidden. The shell reports its own system group in both.
+  const [knownKeys, setKnownKeys] = useState<ReadonlySet<string>>(
+    () => new Set<string>([SYSTEM_GROUP_KEY]),
+  )
   const [defaultCollapsedKeys, setDefaultCollapsedKeys] = useState<ReadonlySet<string>>(
     () => new Set<string>([SYSTEM_GROUP_KEY]),
   )
   const [groupOverrides, setGroupOverrides] = useState<ReadonlyMap<string, boolean>>(
     () => new Map<string, boolean>(),
   )
-  const reportDefaultCollapsed = useCallback((key: string): void => {
+  const reportGroup = useCallback((key: string, startsCollapsed: boolean): void => {
+    setKnownKeys((prev) => {
+      if (prev.has(key)) return prev
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
+    if (!startsCollapsed) return
     setDefaultCollapsedKeys((prev) => {
       if (prev.has(key)) return prev
       const next = new Set(prev)
@@ -157,9 +170,16 @@ export function SidebarRoot({
         : defaultCollapsedKeys.has(key)
       const next = new Map(prev)
       next.set(key, !currently)
+      // Accordion: key was collapsed and now expands, so pin every other known
+      // band collapsed. Collapsing key touches no other band.
+      if (currently) {
+        for (const other of knownKeys) {
+          if (other !== key) next.set(other, true)
+        }
+      }
       return next
     })
-  }, [defaultCollapsedKeys])
+  }, [defaultCollapsedKeys, knownKeys])
   const collapsedGroups = useMemo(() => {
     const effective = new Set(defaultCollapsedKeys)
     for (const [key, collapsedValue] of groupOverrides) {
@@ -169,8 +189,8 @@ export function SidebarRoot({
     return effective
   }, [defaultCollapsedKeys, groupOverrides])
   const groupsApi = useMemo(
-    () => ({ collapsed: collapsedGroups, toggle: toggleGroup, reportDefaultCollapsed }),
-    [collapsedGroups, toggleGroup, reportDefaultCollapsed],
+    () => ({ collapsed: collapsedGroups, toggle: toggleGroup, reportGroup }),
+    [collapsedGroups, toggleGroup, reportGroup],
   )
   const systemCollapsed = collapsedGroups.has(SYSTEM_GROUP_KEY)
 

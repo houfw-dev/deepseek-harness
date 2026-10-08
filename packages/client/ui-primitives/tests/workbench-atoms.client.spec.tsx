@@ -426,7 +426,8 @@ describe('SidebarFootAction', () => {
       () => new Set(initialCollapsed),
     )
     const [overrides, setOverrides] = useState<ReadonlyMap<string, boolean>>(() => new Map())
-    const reportDefaultCollapsed = useCallback((key: string) => {
+    const reportGroup = useCallback((key: string, startsCollapsed: boolean) => {
+      if (!startsCollapsed) return
       setDefaultCollapsedKeys((previous) => {
         if (previous.has(key)) return previous
         const next = new Set(previous)
@@ -452,7 +453,7 @@ describe('SidebarFootAction', () => {
       }
       return effective
     }, [defaultCollapsedKeys, overrides])
-    const api: SidebarGroupsApi = { collapsed, toggle, reportDefaultCollapsed }
+    const api: SidebarGroupsApi = { collapsed, toggle, reportGroup }
     return <SidebarGroupsContext.Provider value={api}>{children}</SidebarGroupsContext.Provider>
   }
 

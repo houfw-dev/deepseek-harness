@@ -49,7 +49,7 @@ function BandStub({ group, reportCollapsed = false }: {
 }) {
   const groups = useSidebarGroups()
   useLayoutEffect(() => {
-    if (reportCollapsed) groups?.reportDefaultCollapsed(group)
+    groups?.reportGroup(group, reportCollapsed)
   }, [groups, group, reportCollapsed])
   const entryCollapsed = groups?.collapsed.has(group) ?? false
   return (
@@ -306,11 +306,58 @@ describe('SidebarRoot shell', () => {
     // the non-reporting band (video) starts expanded.
     expect(screen.queryByTestId('entry-resources')).toBeNull()
     expect(screen.getByTestId('entry-video')).toBeTruthy()
-    // Expanding the seeded band reveals its entry, and it stays revealed even
-    // though the leader re-reports its default on the resulting re-render.
+    // Expanding the seeded band reveals its entry and stays revealed even
+    // though the leader re-reports its default on the resulting re-render;
+    // the accordion collapses the band that was open.
     fireEvent.click(screen.getByRole('button', { name: 'caption-resources' }))
     expect(screen.getByTestId('entry-resources')).toBeTruthy()
+    expect(screen.queryByTestId('entry-video')).toBeNull()
+    // Collapsing the open band leaves the other band collapsed.
+    fireEvent.click(screen.getByRole('button', { name: 'caption-resources' }))
+    expect(screen.queryByTestId('entry-resources')).toBeNull()
+    expect(screen.queryByTestId('entry-video')).toBeNull()
+  })
+
+  it('keeps one band open across the business bands and the system group', () => {
+    render(<SidebarRoot
+      collapsed={false} width={300}
+      useSessions={neverHook} useSessionStatus={useSessionStatus} useSessionRetainInfo={neverHook}
+      usePanelInfo={usePanelInfo} selectPanel={() => {}} usePanels={selector => selector([])}
+      useResource={useResource} useWorkspaces={neverHook}
+      startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
+      renderSlot={((key: string) => {
+        if (key === 'sidebar.footer.action') {
+          return (
+            <>
+              <BandStub group="video" reportCollapsed />
+              <BandStub group="resources" reportCollapsed />
+            </>
+          )
+        }
+        if (key === 'sidebar.settings') {
+          return <div data-testid="settings-seat" />
+        }
+        if (key === 'sidebar.system.action') {
+          return <div data-testid="system-action-seat" />
+        }
+        return <div data-testid="region" />
+      }) as SidebarRootComponentProps['renderSlot']}
+    />)
+    // Every band starts collapsed.
+    expect(screen.queryByTestId('entry-video')).toBeNull()
+    expect(screen.queryByTestId('settings-seat')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'caption-video' }))
     expect(screen.getByTestId('entry-video')).toBeTruthy()
+    // Expanding the system group from its caption collapses the video band.
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(screen.getByTestId('settings-seat')).toBeTruthy()
+    expect(screen.getByTestId('system-action-seat')).toBeTruthy()
+    expect(screen.queryByTestId('entry-video')).toBeNull()
+    // Expanding the resources band collapses the system group.
+    fireEvent.click(screen.getByRole('button', { name: 'caption-resources' }))
+    expect(screen.getByTestId('entry-resources')).toBeTruthy()
+    expect(screen.queryByTestId('settings-seat')).toBeNull()
+    expect(screen.queryByTestId('system-action-seat')).toBeNull()
   })
 })
 

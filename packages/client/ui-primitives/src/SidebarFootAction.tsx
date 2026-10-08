@@ -69,15 +69,15 @@ export function SidebarFootAction({
   ariaExpanded,
 }: SidebarFootActionProps) {
   const groups = useSidebarGroups()
-  const reportDefaultCollapsed = groups?.reportDefaultCollapsed
-  // The band leader seeds its group's initial state. A layout effect (not
-  // render) reports it so the shell's re-render lands before the first paint;
-  // wide only — the rail never collapses.
+  const reportGroup = groups?.reportGroup
+  // Every group entry registers its key (a layout effect so the shell's
+  // re-render lands before first paint); the leader seeds the default. Wide
+  // only — the rail never collapses.
   useLayoutEffect(() => {
-    if (wide && group !== undefined && defaultCollapsed === true) {
-      reportDefaultCollapsed?.(group)
+    if (wide && group !== undefined) {
+      reportGroup?.(group, defaultCollapsed === true)
     }
-  }, [wide, group, defaultCollapsed, reportDefaultCollapsed])
+  }, [wide, group, defaultCollapsed, reportGroup])
   const groupCollapsed = wide && group !== undefined
     && groups !== null && groups.collapsed.has(group)
   const renderCaption = (): ReactNode => {
