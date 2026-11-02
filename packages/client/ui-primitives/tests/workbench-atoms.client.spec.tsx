@@ -47,9 +47,9 @@ describe('TagList', () => {
     expect(screen.getByText('探店')).toBeDefined()
     expect(screen.getByText('AI')).toBeDefined()
     const anchor = screen.getByText('美食').parentElement as HTMLElement
-    fireEvent.mouseEnter(anchor)
+    fireEvent.pointerEnter(anchor)
     expect(screen.getByRole('tooltip').textContent).toBe('美食，探店，AI')
-    fireEvent.mouseLeave(anchor)
+    fireEvent.pointerLeave(anchor)
     expect(screen.queryByRole('tooltip')).toBeNull()
   })
 })
@@ -637,7 +637,10 @@ describe('ResultsTable', () => {
     </>
   )
   const t = (key: 'count' | 'empty', params?: Record<string, unknown>): string => {
-    if (key === 'count') return `共 ${params?.count ?? 0} 条`
+    if (key === 'count') {
+      const count = typeof params?.count === 'number' ? params.count : 0
+      return `共 ${count} 条`
+    }
     return '没有数据'
   }
 

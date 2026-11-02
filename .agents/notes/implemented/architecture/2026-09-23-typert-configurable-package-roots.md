@@ -12,6 +12,8 @@ The generator discovers package projects from the Host/Client aggregate tsconfig
 
 `WorkspaceAnalyzerOptions` gains an optional `packageRoots` list of directories relative to the workspace root (absolute paths accepted, default `['packages']`). A project reference is admitted when its real package directory lies within any configured root; the vendored-tree whitelist used by vendor inclusion is unchanged. `WorkspaceTypertGeneratorOptions` and the tsdown plugin options forward the same field.
 
+Workspace mode generates in a Worker Thread; the plugin puts `packageRoots` in the `WorkspaceWorkerRequest.options`, and the worker entry validates it as an optional string array before constructing its generator, so the subtree pass crosses the worker boundary. Package mode passes it directly to the generator.
+
 The default value keeps upstream layouts unchanged: no existing caller gains or loses a package.
 
 ## Alternatives considered
@@ -22,4 +24,4 @@ The default value keeps upstream layouts unchanged: no existing caller gains or 
 
 ## Consequences
 
-The business repository's `tsdown.config.ts` keeps `typertPlugin({ packageRoots: ['packages', 'base/packages'] })`. Typert source stays outside v8 coverage by the existing exemption; its suites remain the correctness gate.
+The business repository's `tsdown.config.ts` keeps `typertPlugin({ packageRoots: ['packages', 'base/packages'] })`. The worker entry stays outside v8 coverage by the `src/worker.ts` exemption; the plugin's forwarding is covered in `tsdown-plugin.spec.ts`, and the suites remain the correctness gate.

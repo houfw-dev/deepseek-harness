@@ -12,6 +12,8 @@ Status: implemented
 
 `WorkspaceAnalyzerOptions` 新增可选的 `packageRoots` 目录列表，路径相对于工作区根（接受绝对路径，默认 `['packages']`）。当项目引用的真实包目录位于任一配置根内时即被接纳；vendor 纳入所使用的 vendored 树白名单保持不变。`WorkspaceTypertGeneratorOptions` 与 tsdown 插件选项同样转发该字段。
 
+workspace 模式在 Worker Thread 中生成：插件把 `packageRoots` 放入 `WorkspaceWorkerRequest.options`，worker 入口先将其校验为可选字符串数组再构造生成器，因此子树生成可穿过 worker 边界；package 模式则直接传给生成器。
+
 默认值保证上游布局行为不变：现有调用方不会增加或丢失任何包。
 
 ## Alternatives considered
@@ -22,4 +24,4 @@ Status: implemented
 
 ## Consequences
 
-业务仓的 `tsdown.config.ts` 可继续使用 `typertPlugin({ packageRoots: ['packages', 'base/packages'] })`。按既有豁免，typert 源码不在 v8 覆盖范围内，其测试套件仍是正确性门禁。
+业务仓的 `tsdown.config.ts` 可继续使用 `typertPlugin({ packageRoots: ['packages', 'base/packages'] })`。worker 入口按 `src/worker.ts` 豁免不计 v8 覆盖；插件侧转发由 `tsdown-plugin.spec.ts` 覆盖，测试套件仍是正确性门禁。
