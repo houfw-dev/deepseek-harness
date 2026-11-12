@@ -55,11 +55,23 @@ exports[`sidebar shell snapshots > renders Windows caption controls in expanded 
       </span>
     </button>
     <div
-      class="regionArea"
+      class="scrollRegion"
     >
       <div
-        data-slot="sidebar.workspaces"
-        style="display: contents;"
+        class="scrollArea"
+      >
+        <div
+          class="regionArea"
+        >
+          <div
+            data-slot="sidebar.workspaces"
+            style="display: contents;"
+          />
+        </div>
+      </div>
+      <span
+        aria-hidden="true"
+        class="scrollFade"
       />
     </div>
     <div
@@ -203,11 +215,24 @@ exports[`sidebar shell snapshots > renders Windows caption controls in expanded 
       </span>
     </button>
     <div
-      class="regionArea"
+      class="scrollRegion"
     >
       <div
-        data-slot="sidebar.workspaces"
-        style="display: contents;"
+        class="scrollArea"
+        data-sidebar-scrollport=""
+      >
+        <div
+          class="regionArea"
+        >
+          <div
+            data-slot="sidebar.workspaces"
+            style="display: contents;"
+          />
+        </div>
+      </div>
+      <span
+        aria-hidden="true"
+        class="scrollFade"
       />
     </div>
     <div
@@ -322,11 +347,23 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
       </span>
     </button>
     <div
-      class="regionArea"
+      class="scrollRegion"
     >
       <div
-        data-slot="sidebar.workspaces"
-        style="display: contents;"
+        class="scrollArea"
+      >
+        <div
+          class="regionArea"
+        >
+          <div
+            data-slot="sidebar.workspaces"
+            style="display: contents;"
+          />
+        </div>
+      </div>
+      <span
+        aria-hidden="true"
+        class="scrollFade"
       />
     </div>
     <div
@@ -470,11 +507,24 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
       </span>
     </button>
     <div
-      class="regionArea"
+      class="scrollRegion"
     >
       <div
-        data-slot="sidebar.workspaces"
-        style="display: contents;"
+        class="scrollArea"
+        data-sidebar-scrollport=""
+      >
+        <div
+          class="regionArea"
+        >
+          <div
+            data-slot="sidebar.workspaces"
+            style="display: contents;"
+          />
+        </div>
+      </div>
+      <span
+        aria-hidden="true"
+        class="scrollFade"
       />
     </div>
     <div
@@ -629,11 +679,24 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
       </span>
     </button>
     <div
-      class="regionArea"
+      class="scrollRegion"
     >
       <div
-        data-slot="sidebar.workspaces"
-        style="display: contents;"
+        class="scrollArea"
+        data-sidebar-scrollport=""
+      >
+        <div
+          class="regionArea"
+        >
+          <div
+            data-slot="sidebar.workspaces"
+            style="display: contents;"
+          />
+        </div>
+      </div>
+      <span
+        aria-hidden="true"
+        class="scrollFade"
       />
     </div>
     <div
